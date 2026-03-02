@@ -598,99 +598,101 @@ setRedoStack([]);
       }
       if (!data || typeof data.t !== "string") return;
 
-      if (data.t === "snapshot") {
-        if (!Array.isArray(data.elements)) return;
-        setSelectedId(null);
-        setElements(data.elements);
-        setRedoStack([]);
-        remoteCursorsRef.current = {};
-        requestRedraw(data.elements, activeStrokeRef.current, activeShapeRef.current);
-      if (data.t === "presence") {
-        if (typeof data.count === "number" && Number.isFinite(data.count)) setPresenceCount(Math.max(1, Math.floor(data.count)));
-        return;
-      }
+      switch (data.t) {
+        case "snapshot": {
+          if (!Array.isArray(data.elements)) return;
+          setSelectedId(null);
+          setElements(data.elements);
+          setRedoStack([]);
+          remoteCursorsRef.current = {};
+          requestRedraw(data.elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        case "presence": {
+          if (typeof data.count === "number" && Number.isFinite(data.count)) {
+            setPresenceCount(Math.max(1, Math.floor(data.count)));
+          }
+          return;
+        }
+        case "cursor": {
+          if (data.clientId === clientIdRef.current) return;
+          remoteCursorsRef.current[data.clientId] = { p: data.p, last: Date.now() };
+          requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        case "cursor:leave": {
+          delete remoteCursorsRef.current[data.clientId];
+          requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        case "element:remove": {
+          const id = data.id;
+          if (!id) return;
 
-      if (data.t === "cursor") {
-        if (data.clientId === clientIdRef.current) return;
-        remoteCursorsRef.current[data.clientId] = { p: data.p, last: Date.now() };
-        requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
-        return;
-      }
+          // Clean live previews
+          delete remoteLiveStrokesRef.current[id];
+          delete remoteLiveShapesRef.current[id];
 
-      if (data.t === "cursor:leave") {
-        delete remoteCursorsRef.current[data.clientId];
-        requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
-        return;
-      }
+          setElements((prev) => {
+            const next = prev.filter((e) => e.id !== id);
+            requestRedraw(next, activeStrokeRef.current, activeShapeRef.current);
+            return next;
+          });
+          // Also drop from local redo stack if present.
+          setRedoStack((prev) => prev.filter((e) => e.id !== id));
+          return;
+        }
+        case "element:add":
+        case "element:update": {
+          const el = data.el;
+          if (!el || typeof el !== "object" || typeof (el as any).id !== "string") return;
 
-      if (data.t === "element:remove") {
-        const id = data.id;
-        if (!id) return;
-        // Clean live previews
-        delete remoteLiveStrokesRef.current[id];
-        delete remoteLiveShapesRef.current[id];
+          // Remove any live previews with same id.
+          delete remoteLiveStrokesRef.current[(el as any).id];
+          delete remoteLiveShapesRef.current[(el as any).id];
 
-        setElements((prev) => {
-          const next = prev.filter((e) => e.id !== id);
-          requestRedraw(next, activeStrokeRef.current, activeShapeRef.current);
-          return next;
-        });
-        // Also drop from local redo stack if present.
-        setRedoStack((prev) => prev.filter((e) => e.id !== id));
-        return;
-      }
-
-        return;
-      }
-
-      if (data.t === "element:add" || data.t === "element:update") {
-        const el = data.el;
-        if (!el || typeof el !== "object" || typeof (el as any).id !== "string") return;
-
-        // Remove any live previews with same id.
-        delete remoteLiveStrokesRef.current[(el as any).id];
-        delete remoteLiveShapesRef.current[(el as any).id];
-
-        setElements((prev) => {
-          const next = upsertElement(prev, el);
-          requestRedraw(next, activeStrokeRef.current, activeShapeRef.current);
-          return next;
-        });
-        return;
-      }
-
-      if (data.t === "stroke:start") {
-        remoteLiveStrokesRef.current[data.id] = {
-          id: data.id,
-          kind: "stroke",
-          points: [data.p],
-          style: data.style,
-        };
-        requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
-        return;
-      }
-      if (data.t === "stroke:point") {
-        const st = remoteLiveStrokesRef.current[data.id];
-        if (!st) return;
-        st.points.push(data.p);
-        requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
-        return;
-      }
-      if (data.t === "stroke:end") {
-        delete remoteLiveStrokesRef.current[data.id];
-        requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
-        return;
-      }
-
-      if (data.t === "shape:start" || data.t === "shape:update") {
-        remoteLiveShapesRef.current[data.el.id] = data.el;
-        requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
-        return;
-      }
-      if (data.t === "shape:end") {
-        delete remoteLiveShapesRef.current[data.id];
-        requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
-        return;
+          setElements((prev) => {
+            const next = upsertElement(prev, el);
+            requestRedraw(next, activeStrokeRef.current, activeShapeRef.current);
+            return next;
+          });
+          return;
+        }
+        case "stroke:start": {
+          remoteLiveStrokesRef.current[data.id] = {
+            id: data.id,
+            kind: "stroke",
+            points: [data.p],
+            style: data.style,
+          };
+          requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        case "stroke:point": {
+          const st = remoteLiveStrokesRef.current[data.id];
+          if (!st) return;
+          st.points.push(data.p);
+          requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        case "stroke:end": {
+          delete remoteLiveStrokesRef.current[data.id];
+          requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        case "shape:start":
+        case "shape:update": {
+          remoteLiveShapesRef.current[data.el.id] = data.el;
+          requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        case "shape:end": {
+          delete remoteLiveShapesRef.current[data.id];
+          requestRedraw(elements, activeStrokeRef.current, activeShapeRef.current);
+          return;
+        }
+        default:
+          return;
       }
     };
 
