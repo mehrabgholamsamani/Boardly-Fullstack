@@ -1,46 +1,224 @@
-# Whiteboard (Client + WebSocket Server)
+# 🎨 Boardly --- Real-Time Collaborative Whiteboard
 
-This repo is a **monorepo**:
+A production-ready collaborative whiteboard built with **React +
+TypeScript + HTML5 Canvas** on the frontend and a **WebSocket server
+(Node.js)** on the backend.
 
-- `client/` — Vite + React whiteboard UI
-- `server/` — Node.js WebSocket server (rooms, presence, cursor ghosts, undo-your-strokes, snapshot re-sync)
+This project started as a local drawing engine and evolved into a
+real-time, multi-user system deployed across **Vercel (frontend)** and
+**Render (WebSocket backend)**.
 
-## Local dev
+------------------------------------------------------------------------
 
-```bash
+## 🚀 Live Demo
+
+👉 https://boardly-fawn-sigma.vercel.app/
+
+------------------------------------------------------------------------
+
+## 🧠 What This Project Really Is
+
+Boardly is not just a drawing app.
+
+It is: - A deterministic canvas rendering engine - A real-time WebSocket
+synchronization system - A production deployment case study (Vercel +
+Render) - A deep dive into debugging real-world frontend + backend
+integration issues
+
+------------------------------------------------------------------------
+
+## 🏗 Architecture Overview
+
+    Client (React + Canvas)
+            ↓
+    WebSocket (WSS)
+            ↓
+    Node.js Server (Rooms + Broadcast)
+
+### Frontend
+
+-   React + TypeScript
+-   Vite build system
+-   Deterministic canvas renderer
+-   WebSocket client
+
+### Backend
+
+-   Node.js
+-   WebSocket (ws)
+-   In-memory room state
+-   Snapshot + incremental broadcast model
+
+### Deployment
+
+-   **Frontend → Vercel**
+-   **WebSocket server → Render**
+-   Secure `wss://` communication
+
+------------------------------------------------------------------------
+
+## ✨ Features
+
+-   Freehand drawing with smooth brush interpolation
+-   Multiple shape tools (rectangle, circle, triangle, star, heart,
+    umbrella, etc.)
+-   Selection and transformation system
+-   Undo / redo (scoped per user)
+-   Real-time multi-user drawing
+-   Cursor ghost / presence indicators
+-   Room-based collaboration
+-   Late-join snapshot synchronization
+-   Clean separation between UI, state, and renderer
+
+------------------------------------------------------------------------
+
+## 🛠 Tech Stack
+
+**Frontend** - React - TypeScript - Vite - HTML5 Canvas API - Modern CSS
+
+**Backend** - Node.js - WebSocket (ws)
+
+**Deployment** - Vercel - Render
+
+------------------------------------------------------------------------
+
+## 🚀 Getting Started (Local)
+
+``` bash
 npm install
-npm run dev:all
+npm run dev
 ```
 
-- Client: http://localhost:5173 (or whatever Vite prints)
-- WS Server: ws://localhost:8787
+Open:
 
-## Deploy
+http://localhost:5173
 
-### 1) Deploy the WebSocket server to Render
+------------------------------------------------------------------------
 
-Create a **Web Service** on Render from this repo, and set:
+## ⚙️ Engineering Decisions & Problems Solved
 
-- **Root Directory:** `server`
-- **Build Command:** `npm install && npm run build`
-- **Start Command:** `npm run start`
+### 🔹 Deterministic Canvas Rendering
 
-Render sets `PORT` automatically (the server uses `process.env.PORT`).
+**Problem**\
+Incremental canvas drawing caused: - Undo/redo inconsistencies - Visual
+artifacts - Hard-to-debug state mutations
 
-After deploy, your WS url is:
+**Solution**\
+Adopted a state replay model: - All strokes and shapes are stored as
+data - Canvas is fully redrawn from state - Undo/redo becomes
+deterministic
 
-- `wss://YOUR-RENDER-SERVICE.onrender.com`
+------------------------------------------------------------------------
 
-### 2) Deploy the client to Vercel
+### 🔹 Normalizing Shape Geometry
 
-Create / import a Vercel project from the same repo and set:
+**Problem**\
+Shapes behaved differently based on drag direction.
 
-- **Root Directory:** `client`
-- **Environment Variable:** `VITE_WS_URL = wss://YOUR-RENDER-SERVICE.onrender.com`
+**Solution**\
+All shapes are normalized: - Top-left origin - Positive width/height -
+Direction-agnostic math
 
-Then redeploy.
+------------------------------------------------------------------------
 
-## Notes
+### 🔹 Decoupling UI From Rendering
 
-- In production, **use `wss://`** (https site + ws:// will be blocked by browsers).
-- The board state is stored in-memory per server instance (good for demos/portfolio).
+**Problem**\
+Directly drawing inside UI event handlers created fragile logic.
+
+**Solution** - UI updates application state - Renderer consumes state
+and draws
+
+------------------------------------------------------------------------
+
+## 🌐 Real-Time Collaboration Engineering
+
+### 🔹 WebSocket Room Model
+
+-   Each client joins a room
+-   Server tracks clients per room
+-   Events are broadcast only within the room
+
+------------------------------------------------------------------------
+
+### 🔹 Snapshot + Incremental Sync
+
+**Problem**\
+Late joiners saw an empty board.
+
+**Solution** - Server sends a full snapshot on join - Subsequent updates
+are incremental
+
+------------------------------------------------------------------------
+
+### 🔹 Undo Isolation
+
+**Problem**\
+Global undo breaks collaboration.
+
+**Solution** - Each element is tagged with an owner - Undo only affects
+the creator's strokes
+
+------------------------------------------------------------------------
+
+## 🐛 Major Production Bugs & Fixes
+
+### ❌ WebSocket Worked Locally but Failed in Production
+
+**Cause** Client constructed WebSocket URL using window.location,
+resulting in: wss://vercel-domain:8787
+
+**Fix** - Enforced usage of VITE_WS_URL - Normalized protocol handling -
+Removed production localhost fallbacks
+
+------------------------------------------------------------------------
+
+### ❌ npm Registry Timeouts on Render
+
+**Cause** Lockfiles contained resolved URLs pointing to an internal
+registry.
+
+**Fix** - Removed poisoned lockfiles - Forced npmjs registry - Cleared
+Render build cache
+
+------------------------------------------------------------------------
+
+### ❌ Localhost Assumptions Leaking Into Production
+
+**Fix** Strict environment-based configuration and no production
+fallback to localhost.
+
+------------------------------------------------------------------------
+
+## 🎯 Design Goals
+
+-   Explore low-level canvas graphics programming
+-   Build scalable frontend architecture
+-   Implement real-time collaboration correctly
+-   Handle real deployment edge cases
+-   Write maintainable TypeScript
+
+------------------------------------------------------------------------
+
+## 🔮 Future Improvements
+
+-   Layer system
+-   SVG / PNG export
+-   Persistent storage (auth + save boards)
+-   Redis-backed scaling
+-   Rate limiting
+-   Plugin architecture
+
+------------------------------------------------------------------------
+
+## 📄 License
+
+MIT License
+
+------------------------------------------------------------------------
+
+## 🙌 Author
+
+Built as a fullstack + real-time engineering portfolio project.
+
+🔗 https://mehrabdev.com
