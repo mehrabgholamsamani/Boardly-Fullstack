@@ -12,7 +12,7 @@ real-time, multi-user system deployed across **Vercel (frontend)** and
 
 ## 🚀 Live Demo
 
-👉 https://boardly-fawn-sigma.vercel.app/
+👉 [Boardly](https://boardly-fullstack-client.vercel.app/?room=lobby)
 
 ------------------------------------------------------------------------
 
