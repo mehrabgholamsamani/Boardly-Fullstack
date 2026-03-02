@@ -26,7 +26,6 @@ class SimClient {
         const msg = JSON.parse(raw.toString("utf8"));
         this.messages.push(msg);
       } catch {
-        // ignore malformed messages in test buffer
       }
     });
 
@@ -205,3 +204,4 @@ run().catch((err) => {
   console.error("WS simulation test failed:", err);
   process.exitCode = 1;
 });
+

@@ -53,7 +53,6 @@ class SimClient {
         const msg = JSON.parse(raw.toString("utf8")) as AnyMsg;
         this.messages.push(msg);
       } catch {
-        // Ignore malformed messages in test buffer.
       }
     });
 
@@ -184,8 +183,6 @@ async function run(): Promise<void> {
     await d.waitFor((m) => m.t === "element:remove" && m.id === el1.id);
     let lastVersion = getVersion(removeB);
     assert(lastVersion > 0, "durable remove must carry positive version");
-
-    // Two-device durability smoothness: repeated commits must arrive with monotonic version growth.
     for (let i = 0; i < 25; i += 1) {
       const id = `round2-el-${i}`;
       a.send({
@@ -264,3 +261,4 @@ run().catch((err) => {
   console.error("WS simulation test failed:", err);
   process.exitCode = 1;
 });
+

@@ -115,7 +115,7 @@ async function run() {
 }
 
 run().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error("Manual WS smoke test failed:", err);
   process.exitCode = 1;
 });
+

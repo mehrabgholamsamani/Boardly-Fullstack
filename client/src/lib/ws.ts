@@ -16,7 +16,6 @@ export function isDebugEnabled(): boolean {
 
 export function debugLog(...args: unknown[]): void {
   if (!isDebugEnabled()) return;
-  // eslint-disable-next-line no-console
   console.log("[ws]", ...args);
 }
 
@@ -36,3 +35,4 @@ export function getWsUrl(): string {
 
   throw new Error("Missing VITE_WS_URL in non-local environment.");
 }
+

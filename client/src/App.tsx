@@ -11,7 +11,7 @@ type StrokeStyle = {
   tool: "pen" | "eraser";
   brush: Brush;
   color: string;
-  size: number; // px
+  size: number; 
 };
 
 type ShapeType = "rect" | "ellipse" | "triangle" | "star" | "line" | "pentagon" | "tree" | "umbrella" | "heart";
@@ -22,7 +22,7 @@ type StrokeElement = {
   ownerId?: string;
   points: Point[];
   style: StrokeStyle;
-  // For airbrush we store dots for deterministic redraw
+  
   dots?: { x: number; y: number; r: number; a: number }[];
 };
 
@@ -41,7 +41,7 @@ type ShapeElement = {
 
 type Element = StrokeElement | ShapeElement;
 
-// --- Collaboration message types (client <-> WS server) ---
+
 type WSMsg =
   | { t: "join"; room: string; clientId: string }
   | { t: "ping"; ts: number }
@@ -209,7 +209,7 @@ function makeId() {
 }
 
 function hashColor(input: string): string {
-  // Deterministic pleasant-ish color from a string (HSL).
+  
   let h = 0;
   for (let i = 0; i < input.length; i++) h = (h * 31 + input.charCodeAt(i)) >>> 0;
   const hue = h % 360;
@@ -251,11 +251,11 @@ function normalizeRect(x1: number, y1: number, x2: number, y2: number) {
   return { left, top, right, bottom, w: right - left, h: bottom - top };
 }
 
-// --- Hit testing for shapes (MVP: shapes only) ---
+
 function hitTestShape(shape: ShapeElement, p: Point): boolean {
   const pad = Math.max(6, shape.size);
 
-  // Line needs distance-to-segment hit testing.
+  
   if (shape.shape === "line") {
     const x1 = shape.x1;
     const y1 = shape.y1;
@@ -268,7 +268,7 @@ function hitTestShape(shape: ShapeElement, p: Point): boolean {
     const dy = y2 - y1;
     const len2 = dx * dx + dy * dy;
 
-    // treat tiny lines as circles
+    
     if (len2 < 1e-6) {
       const ddx = px - x1;
       const ddy = py - y1;
@@ -285,16 +285,16 @@ function hitTestShape(shape: ShapeElement, p: Point): boolean {
   }
 
   const r = normalizeRect(shape.x1, shape.y1, shape.x2, shape.y2);
-  // expand by a few px so it's easier to click
+  
   const x = p.x;
   const y = p.y;
 
-  // For most shapes we use a forgiving bounding-box hit test (great UX).
+  
   if (shape.shape !== "ellipse") {
     return x >= r.left - pad && x <= r.right + pad && y >= r.top - pad && y <= r.bottom + pad;
   }
 
-  // ellipse precise hit test
+  
   const cx = r.left + r.w / 2;
   const cy = r.top + r.h / 2;
   const rx = Math.max(1, r.w / 2) + pad;
@@ -304,7 +304,7 @@ function hitTestShape(shape: ShapeElement, p: Point): boolean {
   return nx * nx + ny * ny <= 1;
 }
 
-// --- Minimal "tool-like" icons (SVG) ---
+
 function IconButton({
   active,
   disabled,
@@ -601,6 +601,7 @@ export default function App() {
   const [tool, setTool] = useState<Tool>("pen");
   const [shapeType, setShapeType] = useState<ShapeType>("rect");
   const [shapeMenuOpen, setShapeMenuOpen] = useState(false);
+  const [mobileNavHidden, setMobileNavHidden] = useState<boolean>(false);
   const [isCompactUI, setIsCompactUI] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 920px)").matches : false,
   );
@@ -635,6 +636,10 @@ export default function App() {
   useEffect(() => {
     if (tool !== "shape") setShapeMenuOpen(false);
   }, [tool]);
+
+  useEffect(() => {
+    if (mobileNavHidden) setShapeMenuOpen(false);
+  }, [mobileNavHidden]);
 
   useEffect(() => {
     return () => {
@@ -706,7 +711,7 @@ export default function App() {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  // ----- UI layout (pin + peek) -----
+  
   const [leftPinned, setLeftPinned] = useState<boolean>(true);
   const [leftPeek, setLeftPeek] = useState<boolean>(false);
   const [leftInteracting, setLeftInteracting] = useState<boolean>(false);
@@ -714,7 +719,7 @@ export default function App() {
   const activeStrokeRef = useRef<StrokeElement | null>(null);
   const activeShapeRef = useRef<ShapeElement | null>(null);
 
-  // ----- Collaboration (WebSocket rooms) -----
+  
   const [roomId, setRoomId] = useState<string>(() => {
     try {
       const qs = new URLSearchParams(window.location.search);
@@ -754,18 +759,18 @@ export default function App() {
     ws.send(JSON.stringify(msg));
   }
 
-  // Keep room id in URL for shareability.
+  
   useEffect(() => {
     try {
       const url = new URL(window.location.href);
       url.searchParams.set("room", roomId);
       window.history.replaceState({}, "", url);
     } catch {
-      // ignore
+      
     }
   }, [roomId]);
 
-  // Connect / reconnect with backoff and heartbeat.
+  
   useEffect(() => {
     remoteLiveStrokesRef.current = {};
     remoteLiveShapesRef.current = {};
@@ -818,7 +823,7 @@ export default function App() {
           try {
             ws.close(4000, "pong timeout");
           } catch {
-            // ignore
+            
           }
         }, pongTimeoutMs);
       }, heartbeatMs);
@@ -981,7 +986,7 @@ export default function App() {
       try {
         wsRef.current?.close(1000, "room changed");
       } catch {
-        // ignore
+        
       }
       wsRef.current = null;
     };
@@ -995,20 +1000,20 @@ export default function App() {
 
   const rafRef = useRef<number | null>(null);
 
-  // ----- Persistence -----
+  
   const STORAGE_KEY = "whiteboard:vector:v1";
 
 function persistScene(scene: Element[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ scene }));
   } catch {
-    // ignore
+    
   }
 }
 
 
   function deepCloneScene(scene: Element[]): Element[] {
-    // structuredClone is supported in modern browsers; fallback to JSON for safety
+    
     const sc = (globalThis as { structuredClone?: <T>(value: T) => T }).structuredClone;
     if (typeof sc === "function") return sc(scene);
     return JSON.parse(JSON.stringify(scene)) as Element[];
@@ -1023,13 +1028,13 @@ function persistScene(scene: Element[]) {
     });
     setHistoryIndex(() => {
       const baseLen = historyIndex >= 0 ? history.slice(0, historyIndex + 1).length : 0;
-      return baseLen; // after push, index == baseLen
+      return baseLen; 
     });
-    // persist immediately
+    
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ scene: snapshot, historyIndex: (historyIndex >= 0 ? historyIndex + 1 : 0) }));
     } catch {
-      // ignore
+      
     }
   }
 
@@ -1040,19 +1045,19 @@ function persistScene(scene: Element[]) {
       const parsed = JSON.parse(raw) as { scene?: Element[]; historyIndex?: number };
       if (Array.isArray(parsed.scene)) {
         setElements(parsed.scene);
-        // Seed history with one state so undo isn't weird after reload
+        
         setHistory([deepCloneScene(parsed.scene)]);
         setHistoryIndex(0);
         setSelectedId(null);
         requestRedraw(parsed.scene, null, null);
       }
     } catch {
-      // ignore
+      
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
-  // ----- Canvas setup (resize + DPR) -----
+  
   useEffect(() => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -1082,7 +1087,7 @@ function persistScene(scene: Element[]) {
     ro.observe(container);
     resize();
     return () => ro.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [elements]);
 
   function getCtx(): CanvasRenderingContext2D | null {
@@ -1090,7 +1095,7 @@ function persistScene(scene: Element[]) {
     return canvas ? canvas.getContext("2d") : null;
   }
 
-  // --- Drawing styles ---
+  
   function applyStrokeStyle(ctx: CanvasRenderingContext2D, s: StrokeStyle) {
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
@@ -1133,7 +1138,7 @@ function persistScene(scene: Element[]) {
     if (pts.length === 0) return;
 
     if (el.style.tool === "pen" && el.style.brush === "airbrush") {
-      // Deterministic redraw based on stored dots
+      
       const dots = el.dots ?? [];
       ctx.save();
       ctx.globalCompositeOperation = "source-over";
@@ -1228,7 +1233,7 @@ function persistScene(scene: Element[]) {
     }
 
     if (el.shape === "star") {
-      // 5-point star
+      
       const outer = Math.max(6, Math.min(r.w, r.h) / 2);
       const inner = outer * 0.5;
       ctx.beginPath();
@@ -1247,7 +1252,7 @@ function persistScene(scene: Element[]) {
     }
 
     if (el.shape === "tree") {
-      // Simple Christmas tree: big triangle + small trunk
+      
       const trunkH = Math.max(6, r.h * 0.18);
       const trunkW = Math.max(6, r.w * 0.18);
       const topY = r.top;
@@ -1268,7 +1273,7 @@ function persistScene(scene: Element[]) {
 
     
 if (el.shape === "umbrella") {
-  // Umbrella: stable canopy + scallops + handle that stays inside the bounding box
+  
   const x = r.left;
   const y = r.top;
   const w = Math.max(12, r.w);
@@ -1280,12 +1285,12 @@ if (el.shape === "umbrella") {
   const canopyBottom = y + h * 0.55;
   const scallopDepth = Math.min(h * 0.09, (right - left) * 0.07);
 
-  // Canopy top (a smooth arc-like curve)
+  
   ctx.beginPath();
   ctx.moveTo(left, canopyBottom);
   ctx.quadraticCurveTo(cx, top, right, canopyBottom);
 
-  // Scalloped bottom edge (connected, not separate strokes)
+  
   const scallops = 4;
   const seg = (right - left) / scallops;
   for (let i = 0; i < scallops; i++) {
@@ -1296,13 +1301,13 @@ if (el.shape === "umbrella") {
   }
   ctx.stroke();
 
-  // Center rib
+  
   ctx.beginPath();
   ctx.moveTo(cx, top + h * 0.06);
   ctx.lineTo(cx, canopyBottom);
   ctx.stroke();
 
-  // Handle stem
+  
   const stemTop = canopyBottom;
   const stemBottom = y + h * 0.86;
   ctx.beginPath();
@@ -1310,7 +1315,7 @@ if (el.shape === "umbrella") {
   ctx.lineTo(cx, stemBottom);
   ctx.stroke();
 
-  // Hook (J-shape) — smooth arc that stays inside the box
+  
   const hookR = Math.min(w, h) * 0.12;
   const hookCx = cx + hookR;
   const hookCy = Math.min(y + h * 0.94, stemBottom + hookR);
@@ -1324,7 +1329,7 @@ if (el.shape === "umbrella") {
 
     
 if (el.shape === "heart") {
-  // Heart: smoother "classic" heart (no pointy cat-ears), stable in any drag direction
+  
   const x = r.left;
   const y = r.top;
   const w = Math.max(12, r.w);
@@ -1336,10 +1341,10 @@ if (el.shape === "heart") {
   const dipY = y + h * 0.22;
 
   ctx.beginPath();
-  // Start at bottom point
+  
   ctx.moveTo(cx2, bottomY);
 
-  // Left side up to left lobe
+  
   ctx.bezierCurveTo(
     x + w * 0.05,
     y + h * 0.75,
@@ -1349,7 +1354,7 @@ if (el.shape === "heart") {
     topY
   );
 
-  // Left lobe to top dip
+  
   ctx.bezierCurveTo(
     x + w * 0.20,
     y + h * 0.06,
@@ -1359,7 +1364,7 @@ if (el.shape === "heart") {
     dipY
   );
 
-  // Top dip to right lobe
+  
   ctx.bezierCurveTo(
     cx2 + w * 0.18,
     y + h * 0.06,
@@ -1369,7 +1374,7 @@ if (el.shape === "heart") {
     topY
   );
 
-  // Right side back to bottom point
+  
   ctx.bezierCurveTo(
     x + w,
     y + h * 0.50,
@@ -1397,7 +1402,7 @@ if (el.shape === "heart") {
     ctx.strokeStyle = "rgba(0,0,0,0.55)";
     ctx.strokeRect(r.left - 3, r.top - 3, r.w + 6, r.h + 6);
     ctx.setLineDash([]);
-    // tiny handles
+    
     const s = 6;
     const handles: Point[] = [
       { x: r.left, y: r.top },
@@ -1421,30 +1426,30 @@ if (el.shape === "heart") {
     if (!ctx) return;
     const { w, h } = sizeRef.current;
 
-    // Clear to transparent; the paper background is handled by CSS on the stage.
+    
     ctx.save();
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, w * sizeRef.current.dpr, h * sizeRef.current.dpr);
     ctx.restore();
 
-    // Draw scene
+    
     for (const el of scene) {
       if (el.kind === "stroke") drawStroke(ctx, el);
       else drawShape(ctx, el);
     }
 
-    // Remote live previews
+    
     for (const st of Object.values(remoteLiveStrokesRef.current)) drawStroke(ctx, st);
     for (const sh of Object.values(remoteLiveShapesRef.current)) drawShape(ctx, sh);
 
-    // Active previews
+    
     if (activeStroke) drawStroke(ctx, activeStroke);
     if (activeShape) drawShape(ctx, activeShape);
 
-        // Remote cursor ghosts
+        
     const now = Date.now();
     for (const [cid, cur] of Object.entries(remoteCursorsRef.current)) {
-      // Drop stale cursors (no updates for 10s)
+      
       if (now - cur.last > 10_000) {
         delete remoteCursorsRef.current[cid];
         continue;
@@ -1458,7 +1463,7 @@ if (el.shape === "heart") {
       ctx.arc(cur.p.x, cur.p.y, 6, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Tiny label (last 4 chars)
+      
       const tag = cid.slice(-4);
       ctx.font = "12px ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial";
       ctx.fillStyle = "rgba(0,0,0,0.65)";
@@ -1470,7 +1475,7 @@ if (el.shape === "heart") {
       ctx.restore();
     }
 
-// Selection overlay
+
     if (selectedId) {
       const found = scene.find((e) => e.kind === "shape" && e.id === selectedId) as ShapeElement | undefined;
       if (found) drawSelection(ctx, found);
@@ -1485,7 +1490,7 @@ if (el.shape === "heart") {
     });
   }
 
-  // --- Airbrush dot generation ---
+  
   function addAirbrushDots(stroke: StrokeElement, from: Point, to: Point) {
     const d = dist(from, to);
     const steps = Math.max(1, Math.floor(d / 2));
@@ -1508,7 +1513,7 @@ if (el.shape === "heart") {
     }
   }
 
-  // ----- Input handling -----
+  
   function onPointerDown(e: PointerEvent) {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -1516,7 +1521,7 @@ if (el.shape === "heart") {
     const p = getCanvasPoint(e, canvas);
 
     if (tool === "select") {
-      // hit test shapes from topmost
+      
       const shapes = elements.filter((el) => el.kind === "shape") as ShapeElement[];
       const hit = [...shapes].reverse().find((s) => hitTestShape(s, p));
       if (hit) {
@@ -1556,7 +1561,7 @@ if (el.shape === "heart") {
       return;
     }
 
-    // pen / eraser
+    
     const st: StrokeElement = {
       id: makeId(),
       kind: "stroke",
@@ -1572,7 +1577,7 @@ if (el.shape === "heart") {
     };
     activeStrokeRef.current = st;
 
-    // Live broadcast strokes for non-airbrush (airbrush randomness only syncs on commit)
+    
     const canLive = brush !== "airbrush";
     localLiveStrokeRef.current = { id: st.id, live: canLive };
     if (canLive) {
@@ -1589,7 +1594,7 @@ if (el.shape === "heart") {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const p = getCanvasPoint(e, canvas);
-// Send cursor position (throttled)
+
 const now = performance.now();
 if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
   cursorSendThrottleRef.current = now;
@@ -1597,7 +1602,7 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
 }
 
 
-    // Move selected shape
+    
     if (tool === "select" && dragRef.current.mode === "move") {
       const dx = p.x - dragRef.current.start.x;
       const dy = p.y - dragRef.current.start.y;
@@ -1616,7 +1621,7 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
       return;
     }
 
-    // Shape preview
+    
     if (tool === "shape" && activeShapeRef.current) {
       activeShapeRef.current = { ...activeShapeRef.current, x2: p.x, y2: p.y };
       if (localLiveShapeRef.current === activeShapeRef.current.id) {
@@ -1626,7 +1631,7 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
       return;
     }
 
-    // Stroke preview
+    
     if ((tool === "pen" || tool === "eraser") && activeStrokeRef.current) {
       const st = activeStrokeRef.current;
       const last = st.points[st.points.length - 1];
@@ -1635,7 +1640,7 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
         addAirbrushDots(st, last, p);
       }
 
-      // Live point broadcast (non-airbrush)
+      
       if (localLiveStrokeRef.current?.id === st.id && localLiveStrokeRef.current.live) {
         wsSend({ t: "stroke:point", id: st.id, p });
       }
@@ -1650,24 +1655,24 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
       try {
         canvas.releasePointerCapture(e.pointerId);
       } catch {
-        // ignore
+        
       }
     }
 
-    // Commit move
+    
     if (tool === "select" && dragRef.current.mode === "move") {
       dragRef.current.mode = "none";
-      // commit moved scene
+      
       const id = selectedId;
       if (id) {
         const committed = elements.map((el) => {
           if (el.kind !== "shape" || el.id !== id) return el;
-          // values are already updated in preview, but elements state isn't
-          // so we need to read the current preview by recomputing from dragRef
-          // However, easiest: just trigger a no-op push after syncing state.
+          
+          
+          
           return el;
         });
-        // Sync state from last redraw by recomputing with last pointer location
+        
         if (!canvas) return;
         const p = getCanvasPoint(e, canvas);
         const dx = p.x - dragRef.current.start.x;
@@ -1691,7 +1696,7 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
       return;
     }
 
-    // Commit shape
+    
     if (tool === "shape" && activeShapeRef.current) {
       const sh = activeShapeRef.current;
       activeShapeRef.current = null;
@@ -1706,7 +1711,7 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
       return;
     }
 
-    // Commit stroke
+    
     if ((tool === "pen" || tool === "eraser") && activeStrokeRef.current) {
       const st = activeStrokeRef.current;
       activeStrokeRef.current = null;
@@ -1748,10 +1753,10 @@ if (wsStatus === "connected" && now - cursorSendThrottleRef.current > 33) {
 
   useEffect(() => {
     return bindPointerEvents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [tool, brush, color, size, elements, selectedId]);
 
-  // ----- Undo/Redo based on scene snapshots -----
+  
   const myId = clientIdRef.current;
   const canUndo = elements.some((e) => e.ownerId === myId);
   const canRedo = redoStack.length > 0;
@@ -1801,7 +1806,7 @@ function redo() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ scene: [] }));
     } catch {
-      // ignore
+      
     }
   }
 
@@ -1826,12 +1831,12 @@ function redo() {
       canvas.toBlob((b) => resolve(b), "image/png")
     );
     if (!blob) return;
-    // replaceAll isn't available in older TS lib targets; keep it compatible
+    
     const ts = new Date().toISOString().slice(0, 19).split(":").join("-");
     downloadBlob(blob, `whiteboard-${ts}.png`);
   }
 
-  // Keyboard shortcuts
+  
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isMod = e.ctrlKey || e.metaKey;
@@ -1860,17 +1865,17 @@ function redo() {
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [historyIndex, history, selectedId, elements]);
 
-  // Initial history seed (first render)
+  
   useEffect(() => {
     if (historyIndex === -1 && history.length === 0) {
       setHistory([[]]);
       setHistoryIndex(0);
       requestRedraw([], null, null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   const statusToolLabel = useMemo(() => {
@@ -1883,12 +1888,10 @@ function redo() {
   const leftOpen = leftPinned || leftPeek;
 
   return (
-    <div className="app">
+    <div className={"app" + (mobileNavHidden ? " mobileNavHidden" : "")}>
       <div className="stage" ref={containerRef}>
         <div className="paper" aria-hidden="true" />
         <canvas ref={canvasRef} className="canvas" />
-
-        {/* Left edge hover hotspot for peek */}
         {!leftPinned && !leftOpen && (
           <div
             className="edgeHotspot left"
@@ -1896,9 +1899,6 @@ function redo() {
             aria-hidden="true"
           />
         )}
-
-
-        {/* Left tool dock (tools only) */}
         <nav
           className={"dock dockLeft " + (leftOpen ? "open" : "closed")}
           aria-label="Tools"
@@ -2156,8 +2156,6 @@ function redo() {
             </div>
           )}
         </nav>
-
-        {/* Top-right room/status */}
         <div className="roomHud" aria-label="Collaboration status">
           <div className="roomBox" title="Share the URL (room=...) to collaborate">
             <div className={"statusDot " + wsStatus} aria-hidden="true" />
@@ -2172,8 +2170,6 @@ function redo() {
             />
           </div>
         </div>
-
-        {/* Top-right / mobile-bottom global actions */}
         <div className="actions" aria-label="Actions">
           <IconButton title="Undo (Ctrl/Cmd+Z)" disabled={!canUndo} onClick={undo}><IcUndo /></IconButton>
           <IconButton title="Redo (Ctrl/Cmd+Y)" disabled={!canRedo} onClick={redo}><IcRedo /></IconButton>
@@ -2181,8 +2177,17 @@ function redo() {
           <IconButton title="Export PNG" onClick={exportPNG}><IcDownload /></IconButton>
         </div>
 
-        {/* Bottom full-width inspector (contextual) */}
+        <button
+          type="button"
+          className="mobileNavToggle"
+          onClick={() => setMobileNavHidden((v) => !v)}
+          aria-label={mobileNavHidden ? "Show toolbar" : "Hide toolbar"}
+          title={mobileNavHidden ? "Show toolbar" : "Hide toolbar"}
+        >
+          {mobileNavHidden ? "Show UI" : "Hide UI"}
+        </button>
       </div>
     </div>
   );
 }
+

@@ -10,7 +10,7 @@
   --radius: 22px;
 }
 
-/* Prevent controls from spilling out of the dock (default is content-box) */
+
 *, *::before, *::after{ box-sizing: border-box; }
 
 .app{
@@ -25,7 +25,7 @@
   overflow: hidden;
 }
 
-/* Paper look (warm + subtle grain) */
+
 .paper{
   position: absolute;
   inset: 0;
@@ -59,7 +59,7 @@
   touch-action: none;
 }
 
-/* Left floating tool dock (pin + peek) */
+
 .dock{
   position: absolute;
   padding: 12px;
@@ -78,14 +78,14 @@
   left: 16px;
   top: 16px;
   bottom: 16px;
-  /* slightly wider so selects/sliders don't truncate */
+  
   width: 118px;
-  transition: transform 180ms ease;
+  transition: transform 180ms ease, opacity 180ms ease;
   transform: translateX(0);
 }
 
 .dockLeft.closed{
-  /* leave a small tab visible */
+  
   transform: translateX(calc(-100% + 14px));
 }
 
@@ -130,7 +130,7 @@
   background: rgba(255,255,255,.24);
 }
 
-/* Edge hotspots used only when dock is unpinned + collapsed */
+
 .edgeHotspot{
   position: absolute;
   z-index: 30;
@@ -150,13 +150,14 @@
   height: 14px;
 }
 
-/* Top-right actions pill */
+
 .roomHud{
   position: absolute;
   right: 16px;
   top: 16px;
   z-index: 26;
   animation: hudFade .28s ease;
+  transition: opacity .18s ease, transform .18s ease;
 }
 
 .actions{
@@ -174,6 +175,7 @@
   -webkit-backdrop-filter: blur(16px);
   z-index: 25;
   animation: hudFade .28s ease;
+  transition: opacity .18s ease, transform .18s ease;
 }
 
 .roomBox{
@@ -246,6 +248,10 @@
   border-radius: 16px;
 }
 
+.mobileNavToggle{
+  display: none;
+}
+
 @keyframes hudFade{
   from{
     opacity: 0;
@@ -307,7 +313,7 @@
   transform: none;
 }
 
-/* Dock settings */
+
 .dockSettings{
   gap: 12px;
 }
@@ -357,7 +363,7 @@
   cursor: pointer;
 }
 
-/* Make color input look like a tool well */
+
 .colorWell::-webkit-color-swatch-wrapper{
   padding: 0;
 }
@@ -415,7 +421,7 @@
 
 .panelField{
   display: grid;
-  /* label | control | value */
+  
   grid-template-columns: 52px 1fr auto;
   align-items: center;
   gap: 10px;
@@ -479,7 +485,7 @@
 }
 
 
-/* Shape chooser inside dock settings */
+
 .shapeChooser{
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -509,7 +515,7 @@
 }
 .shapeBtn svg{ width: 26px; height: 26px; }
 
-/* Shapes popover next to Shapes icon */
+
 .shapeToolWrap{ position: relative; }
 .shapeMenuPop{
   position: absolute;
@@ -611,6 +617,44 @@
     border-radius: 15px;
   }
 
+  .mobileNavToggle{
+    display: inline-flex;
+    position: absolute;
+    left: 50%;
+    bottom: max(74px, calc(env(safe-area-inset-bottom) + 66px));
+    transform: translateX(-50%);
+    z-index: 28;
+    border: 1px solid rgba(255,255,255,.2);
+    background: linear-gradient(180deg, rgba(6,13,30,.92), rgba(18,28,58,.78));
+    color: rgba(255,255,255,.95);
+    border-radius: 999px;
+    height: 34px;
+    padding: 0 14px;
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    box-shadow: 0 10px 26px rgba(0,0,0,.32);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app.mobileNavHidden .stage{
+    padding-bottom: 0;
+  }
+
+  .app.mobileNavHidden .dock,
+  .app.mobileNavHidden .actions,
+  .app.mobileNavHidden .roomHud{
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+  }
+
+  .app.mobileNavHidden .mobileNavToggle{
+    bottom: max(12px, env(safe-area-inset-bottom));
+    opacity: .95;
+  }
+
   .dock{
     left: 8px;
     right: 8px;
@@ -683,3 +727,4 @@
     height: 48px;
   }
 }
+
