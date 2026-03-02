@@ -619,23 +619,62 @@
 
   .mobileNavToggle{
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     position: absolute;
     left: 50%;
     bottom: max(74px, calc(env(safe-area-inset-bottom) + 66px));
     transform: translateX(-50%);
     z-index: 28;
-    border: 1px solid rgba(255,255,255,.2);
-    background: linear-gradient(180deg, rgba(6,13,30,.92), rgba(18,28,58,.78));
+    border: 1px solid rgba(255,255,255,.26);
+    background:
+      radial-gradient(120% 180% at 50% -40%, rgba(88,186,255,.32), transparent 56%),
+      linear-gradient(180deg, rgba(8,18,42,.95), rgba(21,32,64,.86));
     color: rgba(255,255,255,.95);
     border-radius: 999px;
-    height: 34px;
-    padding: 0 14px;
-    font-size: 12px;
+    height: 38px;
+    min-width: 108px;
+    padding: 0 16px;
+    font-size: 11px;
+    font-weight: 700;
     letter-spacing: .04em;
     text-transform: uppercase;
-    box-shadow: 0 10px 26px rgba(0,0,0,.32);
+    box-shadow:
+      0 12px 24px rgba(0,0,0,.34),
+      inset 0 1px 0 rgba(255,255,255,.28),
+      inset 0 -1px 0 rgba(0,0,0,.24);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
+    transition: transform .14s ease, box-shadow .14s ease, background .14s ease;
+  }
+
+  .mobileNavToggle::before{
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.84);
+    box-shadow: 0 0 12px rgba(120,210,255,.7);
+  }
+
+  .mobileNavToggle:active{
+    transform: translateX(-50%) scale(.97);
+    box-shadow:
+      0 7px 18px rgba(0,0,0,.32),
+      inset 0 1px 0 rgba(255,255,255,.2);
+  }
+
+  .mobileNavToggle.shown{
+    border-color: rgba(160,255,208,.42);
+    background:
+      radial-gradient(120% 180% at 50% -40%, rgba(132,255,205,.28), transparent 56%),
+      linear-gradient(180deg, rgba(8,32,27,.94), rgba(16,52,41,.86));
+  }
+
+  .mobileNavToggle.shown::before{
+    background: rgba(196,255,224,.92);
+    box-shadow: 0 0 12px rgba(98,255,176,.72);
   }
 
   .app.mobileNavHidden .stage{

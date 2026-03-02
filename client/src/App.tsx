@@ -2179,7 +2179,7 @@ function redo() {
 
         <button
           type="button"
-          className="mobileNavToggle"
+          className={"mobileNavToggle" + (mobileNavHidden ? " shown" : "")}
           onClick={() => setMobileNavHidden((v) => !v)}
           aria-label={mobileNavHidden ? "Show toolbar" : "Hide toolbar"}
           title={mobileNavHidden ? "Show toolbar" : "Hide toolbar"}
