@@ -537,15 +537,30 @@ const cursorSendThrottleRef = useRef<number>(0);
   const localLiveShapeRef = useRef<string | null>(null);
 
   function getWsUrl() {
-    // Allow override via Vite env.
-    const anyImportMeta = import.meta as unknown as { env?: Record<string, string | undefined> };
-    const envUrl = anyImportMeta.env?.VITE_WS_URL;
-    if (envUrl) return envUrl;
+    // Prefer an explicit Vite env var. (Vercel/Render deployments should set VITE_WS_URL.)
+    // Supports ws(s):// or http(s):// (we'll normalize http(s) -> ws(s)).
+    const envUrl = (import.meta as unknown as { env?: Record<string, string | undefined> }).env?.VITE_WS_URL;
 
-    const proto = window.location.protocol === "https:" ? "wss" : "ws";
+    const normalize = (raw: string) => {
+      const u = raw.trim();
+      if (!u) return u;
+      if (u.startsWith("ws://") || u.startsWith("wss://")) return u;
+      if (u.startsWith("http://")) return "ws://" + u.slice("http://".length);
+      if (u.startsWith("https://")) return "wss://" + u.slice("https://".length);
+      // If someone pasted just the host, assume wss in prod.
+      if (!u.includes("://")) return "wss://" + u;
+      return u;
+    };
+
+    if (envUrl) return normalize(envUrl);
+
+    // Local default
     const host = window.location.hostname;
-    // Default: WS server on :8787
-    return `${proto}://${host}:8787`;
+    if (host === "localhost" || host === "127.0.0.1") return "ws://localhost:8787";
+
+    // Production fallback: DO NOT point to the Vercel hostname.
+    // If VITE_WS_URL is missing in production, use the Render default for this project.
+    return "wss://boardly-e6js.onrender.com";
   }
 
   function wsSend(msg: WSMsg) {
