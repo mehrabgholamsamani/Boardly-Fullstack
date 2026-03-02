@@ -12,7 +12,27 @@ real-time, multi-user system deployed across **Vercel (frontend)** and
 
 ## 🚀 Live Demo
 
-👉 [Boardly](https://boardly-fullstack-client.vercel.app/?room=lobby)
+👉 https://boardly-fawn-sigma.vercel.app/
+
+------------------------------------------------------------------------
+
+## 📸 Demo Screenshots
+
+### 🖌 Brush Rendering & Styling
+
+![Brush Demo](./screenshots/demo-brush.png)
+
+------------------------------------------------------------------------
+
+### 📐 Shape System & Selection Engine
+
+![Shapes Demo](./screenshots/demo-shapes.png)
+
+------------------------------------------------------------------------
+
+### 🌐 Real-Time Collaboration (Two Clients Synced)
+
+![Realtime Demo](./screenshots/demo-realtime.png)
 
 ------------------------------------------------------------------------
 
