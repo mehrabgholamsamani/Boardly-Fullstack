@@ -686,7 +686,7 @@ export default function App() {
         return;
       }
       setTool("shape");
-      setShapeMenuOpen(false);
+      setShapeMenuOpen((o) => !o);
       return;
     }
     setTool("shape");
