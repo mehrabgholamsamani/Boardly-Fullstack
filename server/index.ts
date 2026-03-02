@@ -128,10 +128,10 @@ function upsert(elements: Element[], el: Element): Element[] {
   next[idx] = el;
   return next;
 
-function removeById(elements: Element[], id: string): Element[] {
-  return elements.filter((e) => e.id !== id);
 }
 
+function removeById(elements: Element[], id: string): Element[] {
+  return elements.filter((e) => e.id !== id);
 }
 
 const wss = new WebSocketServer({ port: PORT });
