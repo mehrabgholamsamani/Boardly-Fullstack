@@ -242,3 +242,21 @@ MIT License
 Built as a fullstack + real-time engineering portfolio project.
 
 🔗 https://mehrabdev.com
+
+------------------------------------------------------------------------
+
+## Validation + Deployment Safety
+
+Run the full reliability gate before deploy:
+
+```bash
+npm run verify
+```
+
+Deployment settings and production checklist are documented in:
+
+`DEPLOY_CHECKLIST.md`
+
+QA plan:
+
+`QA_VALIDATION_PLAN.md`

@@ -1,11 +1,12 @@
 :root{
-  --paper: #f6f1e7;
-  --paper-2: #efe7d7;
+  --paper: #f9f0dc;
+  --paper-2: #f1e3c5;
+  --paper-3: #e8d7b0;
   --ink: rgba(18,18,22,.92);
-  --dock: rgba(18,18,22,.70);
-  --dock-2: rgba(18,18,22,.55);
-  --dock-border: rgba(255,255,255,.10);
-  --dock-shadow: 0 18px 46px rgba(0,0,0,.35);
+  --dock: rgba(9,17,38,.72);
+  --dock-2: rgba(24,31,54,.58);
+  --dock-border: rgba(255,255,255,.14);
+  --dock-shadow: 0 18px 46px rgba(2,8,20,.42);
   --radius: 22px;
 }
 
@@ -14,7 +15,7 @@
 
 .app{
   height: 100%;
-  background: var(--paper);
+  background: linear-gradient(160deg, var(--paper), var(--paper-2) 65%, var(--paper-3));
 }
 
 .stage{
@@ -32,7 +33,7 @@
   background:
     radial-gradient(1200px 900px at 20% 10%, rgba(255,255,255,.55), transparent 60%),
     radial-gradient(900px 700px at 80% 20%, rgba(255,255,255,.35), transparent 55%),
-    radial-gradient(700px 700px at 40% 90%, rgba(0,0,0,.05), transparent 60%),
+    radial-gradient(700px 700px at 40% 90%, rgba(136,95,12,.10), transparent 60%),
     linear-gradient(180deg, var(--paper), var(--paper-2));
 }
 .paper::after{
@@ -150,10 +151,18 @@
 }
 
 /* Top-right actions pill */
-.actions{
+.roomHud{
   position: absolute;
   right: 16px;
   top: 16px;
+  z-index: 26;
+  animation: hudFade .28s ease;
+}
+
+.actions{
+  position: absolute;
+  right: 16px;
+  top: 112px;
   display: flex;
   gap: 10px;
   padding: 10px;
@@ -163,6 +172,8 @@
   box-shadow: 0 14px 34px rgba(0,0,0,.22);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  z-index: 25;
+  animation: hudFade .28s ease;
 }
 
 .roomBox{
@@ -176,7 +187,7 @@
   border: 1px solid rgba(255,255,255,.10);
   background: rgba(0,0,0,.20);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
-  min-width: 150px;
+  min-width: 182px;
 }
 
 .roomLabel{
@@ -235,11 +246,23 @@
   border-radius: 16px;
 }
 
+@keyframes hudFade{
+  from{
+    opacity: 0;
+    transform: translateY(-6px) scale(.98);
+  }
+  to{
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 .dockGroup{
   display: flex;
   flex-direction: column;
   gap: 10px;
   align-items: center;
+  touch-action: manipulation;
 }
 
 .dockDivider{
@@ -260,6 +283,8 @@
   display: grid;
   place-items: center;
   transition: transform .08s ease, background .12s ease, border-color .12s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .iconBtn:hover{
@@ -502,6 +527,7 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   z-index: 30;
+  touch-action: pan-y;
 }
 .shapeBtnPop{
   width: 100%;
@@ -513,6 +539,8 @@
   place-items: center;
   cursor: pointer;
   transition: background .12s ease, border-color .12s ease, transform .08s ease;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 .shapeBtnPop:hover{
   background: rgba(255,255,255,.10);
@@ -525,3 +553,133 @@
   box-shadow: 0 10px 22px rgba(0,0,0,.20);
 }
 .shapeBtnPop svg{ width: 26px; height: 26px; }
+
+@media (max-width: 920px){
+  .stage{
+    padding-bottom: max(122px, env(safe-area-inset-bottom));
+  }
+
+  .edgeHotspot,
+  .dockTab,
+  .dockHandle{
+    display: none;
+  }
+
+  .roomHud{
+    right: 10px;
+    left: 10px;
+    top: max(8px, env(safe-area-inset-top));
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+  }
+
+  .roomBox{
+    pointer-events: auto;
+    min-width: min(92vw, 360px);
+    padding: 10px 12px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(7,18,43,.84), rgba(18,28,55,.68));
+    border: 1px solid rgba(255,255,255,.18);
+    box-shadow: 0 20px 36px rgba(0,0,0,.24);
+  }
+
+  .roomInput{
+    font-size: 15px;
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+
+  .actions{
+    left: 8px;
+    right: 8px;
+    top: auto;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    padding: 10px;
+    border-radius: 22px;
+    justify-content: space-between;
+    background: linear-gradient(180deg, rgba(6,13,30,.9), rgba(18,28,58,.74));
+    border: 1px solid rgba(255,255,255,.16);
+    box-shadow: 0 16px 36px rgba(0,0,0,.34);
+  }
+
+  .actions .iconBtn{
+    width: calc((100vw - 52px) / 4);
+    max-width: 78px;
+    min-width: 58px;
+    height: 52px;
+    border-radius: 15px;
+  }
+
+  .dock{
+    left: 8px;
+    right: 8px;
+    top: auto;
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 64px));
+    width: auto;
+    min-height: 64px;
+    padding: 8px 8px 10px;
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(6,13,32,.88), rgba(19,29,56,.72));
+    border: 1px solid rgba(255,255,255,.16);
+    box-shadow: 0 18px 34px rgba(0,0,0,.34);
+    gap: 8px;
+    transform: translateX(0) !important;
+  }
+
+  .dockGroup{
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding: 2px;
+    scrollbar-width: none;
+    touch-action: pan-x;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+  }
+
+  .dockGroup::-webkit-scrollbar{
+    display: none;
+  }
+
+  .iconBtn{
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+  }
+
+  .dockPanel{
+    width: 100%;
+    margin-top: 2px;
+    padding: 12px;
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.18));
+  }
+
+  .miniTitle{
+    font-size: 10px;
+  }
+
+  .miniValue{
+    font-size: 11px;
+  }
+
+  .shapeMenuPop{
+    left: 50%;
+    top: auto;
+    bottom: calc(100% + 10px);
+    transform: translateX(-50%);
+    width: min(92vw, 360px);
+    grid-template-columns: repeat(4, 1fr);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(8,18,43,.9), rgba(19,29,56,.78));
+  }
+
+  .shapeBtnPop{
+    height: 48px;
+  }
+}
