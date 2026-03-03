@@ -8,6 +8,11 @@
   --dock-border: rgba(255,255,255,.14);
   --dock-shadow: 0 18px 46px rgba(2,8,20,.42);
   --radius: 22px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
 }
 
 
@@ -561,6 +566,12 @@
 .shapeBtnPop svg{ width: 26px; height: 26px; }
 
 @media (max-width: 920px){
+  :root{
+    --mobile-gutter: clamp(8px, 2.8vw, 14px);
+    --mobile-gap: clamp(8px, 2.4vw, 12px);
+    --mobile-control-h: 44px;
+  }
+
   .stage{
     padding-bottom: max(122px, env(safe-area-inset-bottom));
   }
@@ -572,8 +583,8 @@
   }
 
   .roomHud{
-    right: 10px;
-    left: 10px;
+    right: var(--mobile-gutter);
+    left: var(--mobile-gutter);
     top: max(8px, env(safe-area-inset-top));
     display: flex;
     justify-content: center;
@@ -582,8 +593,8 @@
 
   .roomBox{
     pointer-events: auto;
-    min-width: min(92vw, 360px);
-    padding: 10px 12px;
+    min-width: min(94vw, 360px);
+    padding: var(--space-3) var(--space-4);
     border-radius: 20px;
     background: linear-gradient(180deg, var(--dock), var(--dock-2));
     border: 1px solid rgba(255,255,255,.18);
@@ -591,28 +602,30 @@
   }
 
   .roomInput{
-    font-size: 15px;
+    font-size: 16px;
+    min-height: var(--mobile-control-h);
     border-radius: 12px;
-    padding: 8px 10px;
+    padding: 10px 12px;
   }
 
   .actions{
-    left: 8px;
-    right: 8px;
+    left: var(--mobile-gutter);
+    right: var(--mobile-gutter);
     top: auto;
     bottom: max(8px, env(safe-area-inset-bottom));
-    padding: 10px;
+    padding: var(--space-3);
     border-radius: 22px;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: var(--mobile-gap);
     background: linear-gradient(180deg, rgba(6,13,30,.9), rgba(18,28,58,.74));
     border: 1px solid rgba(255,255,255,.16);
     box-shadow: 0 16px 36px rgba(0,0,0,.34);
   }
 
   .actions .iconBtn{
-    width: calc((100vw - 52px) / 4);
-    max-width: 78px;
-    min-width: 58px;
+    width: 100%;
+    min-width: 0;
     height: 52px;
     border-radius: 15px;
   }
@@ -621,7 +634,7 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: var(--space-2);
     position: absolute;
     left: 50%;
     bottom: max(74px, calc(env(safe-area-inset-bottom) + 66px));
@@ -633,10 +646,10 @@
       linear-gradient(180deg, rgba(8,18,42,.95), rgba(21,32,64,.86));
     color: rgba(255,255,255,.95);
     border-radius: 999px;
-    height: 38px;
-    min-width: 108px;
+    min-height: var(--mobile-control-h);
+    min-width: 118px;
     padding: 0 16px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: .04em;
     text-transform: uppercase;
@@ -695,18 +708,18 @@
   }
 
   .dock{
-    left: 8px;
-    right: 8px;
+    left: var(--mobile-gutter);
+    right: var(--mobile-gutter);
     top: auto;
     bottom: max(72px, calc(env(safe-area-inset-bottom) + 64px));
     width: auto;
     min-height: 64px;
-    padding: 8px 8px 10px;
+    padding: var(--space-2) var(--space-2) var(--space-3);
     border-radius: 24px;
     background: linear-gradient(180deg, rgba(6,13,32,.88), rgba(19,29,56,.72));
     border: 1px solid rgba(255,255,255,.16);
     box-shadow: 0 18px 34px rgba(0,0,0,.34);
-    gap: 8px;
+    gap: var(--mobile-gap);
     transform: translateX(0) !important;
   }
 
@@ -714,9 +727,9 @@
     flex-direction: row;
     justify-content: flex-start;
     align-items: center;
-    gap: 8px;
+    gap: var(--mobile-gap);
     overflow-x: auto;
-    padding: 2px;
+    padding: var(--space-1);
     scrollbar-width: none;
     touch-action: pan-x;
     overscroll-behavior-x: contain;
@@ -738,17 +751,37 @@
   .dockPanel{
     width: 100%;
     margin-top: 2px;
-    padding: 12px;
+    padding: var(--space-3);
     border-radius: 18px;
     background: linear-gradient(180deg, rgba(0,0,0,.26), rgba(0,0,0,.18));
+    gap: var(--space-3);
+    max-height: min(36vh, 320px);
+    overflow-y: auto;
+  }
+
+  .miniLabel{
+    align-items: stretch;
+    gap: 6px;
   }
 
   .miniTitle{
-    font-size: 10px;
+    font-size: 12px;
+    letter-spacing: .06em;
   }
 
   .miniValue{
-    font-size: 11px;
+    font-size: 12px;
+    text-align: right;
+  }
+
+  .miniSelect{
+    min-height: var(--mobile-control-h);
+    font-size: 16px;
+  }
+
+  .colorWell{
+    width: 44px;
+    height: 44px;
   }
 
   .shapeMenuPop{
@@ -760,10 +793,37 @@
     grid-template-columns: repeat(4, 1fr);
     border-radius: 20px;
     background: linear-gradient(180deg, rgba(8,18,43,.9), rgba(19,29,56,.78));
+    max-height: min(52vh, 320px);
+    overflow-y: auto;
   }
 
   .shapeBtnPop{
     height: 48px;
+  }
+}
+
+@media (max-width: 480px){
+  .stage{
+    padding-bottom: max(116px, env(safe-area-inset-bottom));
+  }
+
+  .dock{
+    bottom: max(68px, calc(env(safe-area-inset-bottom) + 60px));
+  }
+
+  .mobileNavToggle{
+    bottom: max(72px, calc(env(safe-area-inset-bottom) + 60px));
+    min-width: 102px;
+    padding: 0 14px;
+  }
+
+  .roomLabel,
+  .roomPresence{
+    font-size: 12px;
+  }
+
+  .shapeMenuPop{
+    grid-template-columns: repeat(3, 1fr);
   }
 }
 

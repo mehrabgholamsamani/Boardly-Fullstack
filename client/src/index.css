@@ -5,7 +5,11 @@
   font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
 }
 *{ box-sizing: border-box; }
-html, body { height: 100%; margin: 0; }
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+}
 #root { height: 100%; }
 button, input, select {
   font: inherit;
