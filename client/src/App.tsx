@@ -1273,54 +1273,42 @@ function persistScene(scene: Element[]) {
 
     
 if (el.shape === "umbrella") {
-  
   const x = r.left;
   const y = r.top;
   const w = Math.max(12, r.w);
   const h = Math.max(12, r.h);
 
-  const left = x + w * 0.12;
-  const right = x + w * 0.88;
-  const top = y + h * 0.10;
-  const canopyBottom = y + h * 0.55;
-  const scallopDepth = Math.min(h * 0.09, (right - left) * 0.07);
+  const canopyLeft = x;
+  const canopyRight = x + w;
+  const canopyBottom = y + h * 0.52;
+  const scallopDepth = h * 0.10;
 
-  
+  // Top dome arc + scalloped bottom as one continuous path
   ctx.beginPath();
-  ctx.moveTo(left, canopyBottom);
-  ctx.quadraticCurveTo(cx, top, right, canopyBottom);
-
-  
+  ctx.moveTo(canopyLeft, canopyBottom);
+  ctx.quadraticCurveTo(cx, y, canopyRight, canopyBottom);
+  // Scallops right-to-left, continuing from where arc ended
   const scallops = 4;
-  const seg = (right - left) / scallops;
-  for (let i = 0; i < scallops; i++) {
-    const x0 = left + i * seg;
-    const x1 = x0 + seg;
-    const xm = (x0 + x1) / 2;
-    ctx.quadraticCurveTo(xm, canopyBottom + scallopDepth, x1, canopyBottom);
+  const seg = (canopyRight - canopyLeft) / scallops;
+  for (let i = scallops - 1; i >= 0; i--) {
+    const sx0 = canopyLeft + i * seg;
+    const sx1 = canopyLeft + (i + 1) * seg;
+    const sxm = (sx0 + sx1) / 2;
+    ctx.quadraticCurveTo(sxm, canopyBottom + scallopDepth, sx0, canopyBottom);
   }
   ctx.stroke();
 
-  
+  // Stem
+  const stemBottom = y + h * 0.85;
   ctx.beginPath();
-  ctx.moveTo(cx, top + h * 0.06);
-  ctx.lineTo(cx, canopyBottom);
-  ctx.stroke();
-
-  
-  const stemTop = canopyBottom;
-  const stemBottom = y + h * 0.86;
-  ctx.beginPath();
-  ctx.moveTo(cx, stemTop);
+  ctx.moveTo(cx, canopyBottom);
   ctx.lineTo(cx, stemBottom);
   ctx.stroke();
 
-  
-  const hookR = Math.min(w, h) * 0.12;
-  const hookCx = cx + hookR;
-  const hookCy = Math.min(y + h * 0.94, stemBottom + hookR);
+  // J-hook handle: full semicircle going down then back up
+  const hookR = Math.min(w, h) * 0.13;
   ctx.beginPath();
-  ctx.arc(hookCx, hookCy, hookR, Math.PI, Math.PI * 1.55, false);
+  ctx.arc(cx - hookR, stemBottom, hookR, 0, Math.PI, false);
   ctx.stroke();
 
   ctx.restore();
