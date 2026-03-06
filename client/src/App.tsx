@@ -1337,54 +1337,41 @@ if (el.shape === "heart") {
 
   const cx2 = x + w / 2;
   const bottomY = y + h;
-  const topY = y + h * 0.30;
-  const dipY = y + h * 0.22;
+
+  // Miter join gives the bottom tip a crisp point instead of a rounded cap
+  ctx.lineJoin = "miter";
 
   ctx.beginPath();
-  
+
   ctx.moveTo(cx2, bottomY);
 
-  
-  ctx.bezierCurveTo(
-    x + w * 0.05,
-    y + h * 0.75,
-    x,
-    y + h * 0.50,
-    x + w * 0.25,
-    topY
-  );
+  // Left outer side (bottom tip up to left edge)
+  ctx.bezierCurveTo(x + w * 0.2, y + h * 0.89, x, y + h * 0.61, x, y + h * 0.39);
 
-  
-  ctx.bezierCurveTo(
-    x + w * 0.20,
-    y + h * 0.06,
-    cx2 - w * 0.18,
-    y + h * 0.06,
-    cx2,
-    dipY
-  );
+  // Left lobe arc (left edge up and over to top-left)
+  ctx.bezierCurveTo(x, y + h * 0.17, x + w * 0.2, y, x + w * 0.35, y);
 
-  
-  ctx.bezierCurveTo(
-    cx2 + w * 0.18,
-    y + h * 0.06,
-    x + w * 0.80,
-    y + h * 0.06,
-    x + w * 0.75,
-    topY
-  );
+  // Left top to center dip
+  ctx.bezierCurveTo(x + w * 0.42, y, cx2, y + h * 0.09, cx2, y + h * 0.24);
 
-  
-  ctx.bezierCurveTo(
-    x + w,
-    y + h * 0.50,
-    x + w * 0.95,
-    y + h * 0.75,
-    cx2,
-    bottomY
-  );
+  // Center dip to right top
+  ctx.bezierCurveTo(cx2, y + h * 0.09, x + w * 0.58, y, x + w * 0.65, y);
+
+  // Right lobe arc (top-right down to right edge)
+  ctx.bezierCurveTo(x + w * 0.8, y, x + w, y + h * 0.17, x + w, y + h * 0.39);
+
+  // Right outer side (right edge down to bottom tip)
+  ctx.bezierCurveTo(x + w, y + h * 0.61, x + w * 0.8, y + h * 0.89, cx2, bottomY);
 
   ctx.closePath();
+
+  // Fill with a semi-transparent tint of the stroke color for visual weight
+  const hexColor = el.color.replace("#", "");
+  const fR = parseInt(hexColor.slice(0, 2), 16);
+  const fG = parseInt(hexColor.slice(2, 4), 16);
+  const fB = parseInt(hexColor.slice(4, 6), 16);
+  ctx.fillStyle = `rgba(${fR},${fG},${fB},0.18)`;
+  ctx.fill();
   ctx.stroke();
   ctx.restore();
   return;
