@@ -1365,13 +1365,6 @@ if (el.shape === "heart") {
 
   ctx.closePath();
 
-  // Fill with a semi-transparent tint of the stroke color for visual weight
-  const hexColor = el.color.replace("#", "");
-  const fR = parseInt(hexColor.slice(0, 2), 16);
-  const fG = parseInt(hexColor.slice(2, 4), 16);
-  const fB = parseInt(hexColor.slice(4, 6), 16);
-  ctx.fillStyle = `rgba(${fR},${fG},${fB},0.18)`;
-  ctx.fill();
   ctx.stroke();
   ctx.restore();
   return;
