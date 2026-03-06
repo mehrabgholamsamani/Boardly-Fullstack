@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Head -->
+    <circle cx="50" cy="57" r="33" stroke-width="2.5"/>
+    <!-- Left ear -->
+    <path d="M19,40 L24,8 L40,30" stroke-width="2.5"/>
+    <!-- Right ear -->
+    <path d="M60,30 L76,8 L81,40" stroke-width="2.5"/>
+    <!-- Left eye (almond) -->
+    <path d="M30,51 Q37,43 44,51 Q37,57 30,51 Z" stroke-width="2"/>
+    <!-- Left pupil -->
+    <circle cx="37" cy="51" r="3" stroke-width="1.5"/>
+    <!-- Right eye (almond) -->
+    <path d="M56,51 Q63,43 70,51 Q63,57 56,51 Z" stroke-width="2"/>
+    <!-- Right pupil -->
+    <circle cx="63" cy="51" r="3" stroke-width="1.5"/>
+    <!-- Nose -->
+    <path d="M47,62 L50,58 L53,62 Q50,65 47,62 Z" stroke-width="1.5"/>
+    <!-- Mouth -->
+    <path d="M47,64 Q43,69 39,67" stroke-width="1.5"/>
+    <path d="M53,64 Q57,69 61,67" stroke-width="1.5"/>
+    <!-- Left whiskers -->
+    <line x1="6" y1="58" x2="37" y2="60" stroke-width="1.5"/>
+    <line x1="6" y1="65" x2="37" y2="65" stroke-width="1.5"/>
+    <line x1="6" y1="72" x2="37" y2="70" stroke-width="1.5"/>
+    <!-- Right whiskers -->
+    <line x1="94" y1="58" x2="63" y2="60" stroke-width="1.5"/>
+    <line x1="94" y1="65" x2="63" y2="65" stroke-width="1.5"/>
+    <line x1="94" y1="72" x2="63" y2="70" stroke-width="1.5"/>
+  </g>
+</svg>

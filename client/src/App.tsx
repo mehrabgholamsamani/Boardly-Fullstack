@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import "./App.css";
 import { debugLog, getWsUrl } from "./lib/ws";
+import { buildPresetStrokes, PRESET_NAMES, type PresetName, type ExistingBounds } from "./lib/presetDrawings";
 
 type Brush = "pencil" | "marker" | "highlighter" | "airbrush";
 type Tool = "pen" | "eraser" | "select" | "shape";
@@ -593,6 +594,17 @@ function IcDownload() {
   );
 }
 
+function IcSmiley() {
+  return (
+    <Svg>
+      <circle cx="14" cy="14" r="9" stroke="rgba(255,255,255,.9)" strokeWidth="2" fill="none"/>
+      <circle cx="11" cy="12.5" r="1.3" fill="rgba(255,255,255,.9)"/>
+      <circle cx="17" cy="12.5" r="1.3" fill="rgba(255,255,255,.9)"/>
+      <path d="M10.5 16.5 Q14 20 17.5 16.5" stroke="rgba(255,255,255,.9)" strokeWidth="2" strokeLinecap="round" fill="none"/>
+    </Svg>
+  );
+}
+
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -745,6 +757,13 @@ export default function App() {
 
   const localLiveStrokeRef = useRef<{ id: string; live: boolean } | null>(null);
   const localLiveShapeRef = useRef<string | null>(null);
+  const presetAnimRef = useRef<{
+    strokes: StrokeElement[];
+    idx: number;
+    ptIdx: number;
+    pauseFrames: number;
+    rafId: number;
+  } | null>(null);
 
   useEffect(() => {
     elementsRef.current = elements;
@@ -1483,6 +1502,7 @@ if (el.shape === "heart") {
 
   
   function onPointerDown(e: PointerEvent) {
+    if (presetAnimRef.current) { cancelAnimationFrame(presetAnimRef.current.rafId); presetAnimRef.current = null; }
     const canvas = canvasRef.current;
     if (!canvas) return;
     canvas.setPointerCapture(e.pointerId);
@@ -1804,7 +1824,90 @@ function redo() {
     downloadBlob(blob, `whiteboard-${ts}.png`);
   }
 
-  
+  function startPresetAnimation(strokes: StrokeElement[]) {
+    if (presetAnimRef.current) cancelAnimationFrame(presetAnimRef.current.rafId);
+    if (!strokes.length) return;
+    presetAnimRef.current = { strokes, idx: 0, ptIdx: 0, pauseFrames: 0, rafId: 0 };
+    const PTS_PER_FRAME = 2;
+    const STROKE_PAUSE = 24; // ~400 ms at 60 fps — pen lifts between strokes
+
+    function tick() {
+      const anim = presetAnimRef.current;
+      if (!anim) return;
+
+      // Pen is lifted — wait before starting the next stroke
+      if (anim.pauseFrames > 0) {
+        anim.pauseFrames--;
+        anim.rafId = requestAnimationFrame(tick);
+        return;
+      }
+
+      const full = anim.strokes[anim.idx];
+      anim.ptIdx += PTS_PER_FRAME;
+
+      if (anim.ptIdx >= full.points.length) {
+        // Commit finished stroke
+        const next = [...elementsRef.current, full];
+        elementsRef.current = next;
+        setElements(next);
+        wsSend({ t: "element:add", el: full });
+        anim.idx++;
+        anim.ptIdx = 0;
+
+        if (anim.idx >= anim.strokes.length) {
+          setRedoStack([]);
+          pushHistory(next);
+          presetAnimRef.current = null;
+          requestRedraw(next, null, null);
+          return;
+        }
+        // Pause (pen lifted) before next stroke
+        anim.pauseFrames = STROKE_PAUSE;
+        requestRedraw(next, null, null);
+      } else {
+        // Grow the ink trail for the current stroke
+        const live: StrokeElement = { ...full, points: full.points.slice(0, anim.ptIdx) };
+        requestRedraw(elementsRef.current, live, null);
+      }
+      anim.rafId = requestAnimationFrame(tick);
+    }
+    presetAnimRef.current.rafId = requestAnimationFrame(tick);
+  }
+
+  function handlePresetDraw() {
+    const { w, h } = sizeRef.current;
+    const name = PRESET_NAMES[Math.floor(Math.random() * PRESET_NAMES.length)] as PresetName;
+
+    // Compute bounding box of everything currently on the canvas
+    let existingBounds: ExistingBounds | null = null;
+    const els = elementsRef.current;
+    if (els.length) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      for (const el of els) {
+        if (el.kind === "stroke") {
+          for (const p of el.points) {
+            if (p.x < minX) minX = p.x;
+            if (p.y < minY) minY = p.y;
+            if (p.x > maxX) maxX = p.x;
+            if (p.y > maxY) maxY = p.y;
+          }
+        } else {
+          const x1 = Math.min(el.x1, el.x2), x2 = Math.max(el.x1, el.x2);
+          const y1 = Math.min(el.y1, el.y2), y2 = Math.max(el.y1, el.y2);
+          if (x1 < minX) minX = x1;
+          if (y1 < minY) minY = y1;
+          if (x2 > maxX) maxX = x2;
+          if (y2 > maxY) maxY = y2;
+        }
+      }
+      existingBounds = { minX, minY, maxX, maxY };
+    }
+
+    const strokes = buildPresetStrokes(name, w, h, existingBounds);
+    startPresetAnimation(strokes);
+  }
+
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const isMod = e.ctrlKey || e.metaKey;
@@ -2025,6 +2128,14 @@ function redo() {
                 </div>
               )}
             </div>
+          </div>
+
+          <div className="dockDivider" />
+
+          <div className="dockGroup">
+            <IconButton title="Surprise me! Draw a random preset" onClick={handlePresetDraw}>
+              <IcSmiley />
+            </IconButton>
           </div>
 
           {leftOpen && (

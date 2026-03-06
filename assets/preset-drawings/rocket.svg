@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <g fill="none" stroke="black" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5">
+    <!-- Body + nose cone (single closed path) -->
+    <path d="M36,34 C40,8 60,8 64,34 L64,72 L36,72 Z"/>
+    <!-- Left fin -->
+    <path d="M36,56 L18,76 L36,76"/>
+    <!-- Right fin -->
+    <path d="M64,56 L82,76 L64,76"/>
+    <!-- Porthole -->
+    <circle cx="50" cy="47" r="9"/>
+    <!-- Nozzle band -->
+    <path d="M38,72 L38,78 L62,78 L62,72"/>
+    <!-- Flame -->
+    <path d="M38,78 Q44,92 50,88 Q56,92 62,78"/>
+  </g>
+</svg>
