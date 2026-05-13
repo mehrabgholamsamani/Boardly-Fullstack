@@ -30,7 +30,7 @@ real-time, multi-user system deployed across **Vercel (frontend)** and
 
 ------------------------------------------------------------------------
 
-### 🌐 Real-Time Collaboration (Two Clients Synced)
+### 🌐 Real-Time Collaboration (Two Clients Synced )
 
 ![Realtime Demo](./screenshots/demo-realtime.png)
 
